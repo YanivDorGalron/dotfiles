@@ -97,30 +97,29 @@ install_zsh() {
         ok "zsh already available at $(which zsh)"
         return
     fi
-    info "Building zsh from source into ~/.local ..."
-    local tmp="/tmp/zsh_build_$$"
+    info "Installing prebuilt static zsh (romkatv/zsh-bin)..."
+    local tmp="/tmp/zsh_install_$$"
     mkdir -p "$tmp"
-    local version="5.9"
-    # Use GitHub mirror (SourceForge redirects break curl)
-    curl -sL -o "$tmp/zsh.tar.gz" "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-${version}.tar.gz"
+    local zsh_arch="x86_64"
+    [ "$ARCH" = "aarch64" ] && zsh_arch="aarch64"
+    local url="https://github.com/romkatv/zsh-bin/releases/latest/download/zsh-5.8-linux-${zsh_arch}.tar.gz"
+    curl -sL -o "$tmp/zsh.tar.gz" "$url"
     tar -xzf "$tmp/zsh.tar.gz" -C "$tmp"
-    cd "$tmp/zsh-zsh-${version}"
-    # autoconf is needed for GitHub source (no pre-generated configure)
-    if [ -f Util/preconfig ]; then
-        ./Util/preconfig
-    elif command -v autoconf &>/dev/null; then
-        autoheader && autoconf
-    else
-        err "autoconf not available — cannot build zsh from source"
-        err "Ask your admin to install zsh, or install autoconf"
-        cd - >/dev/null; rm -rf "$tmp"
-        return 1
+    # zsh-bin extracts to a directory with bin/, share/, etc.
+    local zsh_dir
+    zsh_dir=$(find "$tmp" -maxdepth 1 -type d -name 'zsh*' | head -1)
+    if [ -z "$zsh_dir" ]; then
+        zsh_dir="$tmp"
     fi
-    ./configure --prefix="$HOME/.local" --enable-multibyte --without-tcsetpgrp
-    make -j"$(nproc)" && make install
-    cd - >/dev/null
+    # Copy bin and share into ~/.local
+    cp -f "$zsh_dir/bin/zsh" "$LOCAL_BIN/zsh"
+    chmod +x "$LOCAL_BIN/zsh"
+    # Copy zsh functions/completions if present
+    if [ -d "$zsh_dir/share" ]; then
+        cp -rf "$zsh_dir/share/"* "$LOCAL_SHARE/" 2>/dev/null || true
+    fi
     rm -rf "$tmp"
-    ok "zsh built and installed at $LOCAL_BIN/zsh"
+    ok "zsh installed at $LOCAL_BIN/zsh"
 }
 
 # ──────────────────────────────────────────────
