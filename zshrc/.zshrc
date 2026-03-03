@@ -7,8 +7,14 @@ export PATH="$HOME/.local/bin:$HOME/.local/opt/go/bin:$HOME/go/bin:$HOME/.cargo/
 # macOS homebrew (only exists on mac)
 [ -d /opt/homebrew/bin ] && export PATH="/opt/homebrew/bin:$PATH"
 
+# ── Fix fpath for user-local zsh (romkatv/zsh-bin) ──
+# The static zsh binary looks in /usr/local/share but we installed to ~/.local/share
+for _zfunc in "$HOME/.local/share/zsh"/*/functions; do
+    [ -d "$_zfunc" ] && fpath=("$_zfunc" $fpath)
+done
+unset _zfunc
+
 # ── Terminal fixes ──
-# Ensure backspace works correctly
 stty erase '^?' 2>/dev/null
 bindkey '^?' backward-delete-char
 bindkey '^H' backward-delete-char
