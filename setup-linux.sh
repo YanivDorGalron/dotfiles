@@ -115,9 +115,9 @@ install_zsh() {
     # Copy bin and share into ~/.local
     cp -f "$zsh_dir/bin/zsh" "$LOCAL_BIN/zsh"
     chmod +x "$LOCAL_BIN/zsh"
-    # Copy zsh functions/completions if present
-    if [ -d "$zsh_dir/share" ]; then
-        cp -rf "$zsh_dir/share/"* "$LOCAL_SHARE/" 2>/dev/null || true
+    # Copy zsh functions/completions (but NOT the bundled terminfo — it conflicts with system terminfo)
+    if [ -d "$zsh_dir/share/zsh" ]; then
+        cp -rf "$zsh_dir/share/zsh" "$LOCAL_SHARE/" 2>/dev/null || true
     fi
     rm -rf "$tmp"
     ok "zsh installed at $LOCAL_BIN/zsh"
