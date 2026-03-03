@@ -543,7 +543,7 @@ setup_dotfiles() {
         git -C "$dotfiles_dir" pull || warn "Could not pull dotfiles, using existing"
     else
         info "Cloning dotfiles..."
-        git clone https://github.com/ygalron/dotfiles.git "$dotfiles_dir"
+        git clone https://github.com/YanivDorGalron/dotfiles.git "$dotfiles_dir"
     fi
     ok "Dotfiles ready at $dotfiles_dir"
 }
