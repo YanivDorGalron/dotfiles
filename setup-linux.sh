@@ -101,10 +101,22 @@ install_zsh() {
     local tmp="/tmp/zsh_build_$$"
     mkdir -p "$tmp"
     local version="5.9.1"
-    curl -sL "https://sourceforge.net/projects/zsh/files/zsh/${version}/zsh-${version}.tar.xz/download" -o "$tmp/zsh.tar.xz"
-    tar -xJf "$tmp/zsh.tar.xz" -C "$tmp"
-    cd "$tmp/zsh-${version}"
-    ./configure --prefix="$HOME/.local" --enable-multibyte
+    # Use GitHub mirror (SourceForge redirects break curl)
+    curl -sL "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-${version}.tar.gz" -o "$tmp/zsh.tar.gz"
+    tar -xzf "$tmp/zsh.tar.gz" -C "$tmp"
+    cd "$tmp/zsh-zsh-${version}"
+    # autoconf is needed for GitHub source (no pre-generated configure)
+    if [ -f Util/preconfig ]; then
+        ./Util/preconfig
+    elif command -v autoconf &>/dev/null; then
+        autoheader && autoconf
+    else
+        err "autoconf not available — cannot build zsh from source"
+        err "Ask your admin to install zsh, or install autoconf"
+        cd - >/dev/null; rm -rf "$tmp"
+        return 1
+    fi
+    ./configure --prefix="$HOME/.local" --enable-multibyte --without-tcsetpgrp
     make -j"$(nproc)" && make install
     cd - >/dev/null
     rm -rf "$tmp"
@@ -154,13 +166,21 @@ install_tmux() {
         ok "tmux already available ($(tmux -V))"
         return
     fi
-    info "Installing tmux from GitHub release..."
-    gh_install_binary "nelsonenzo/tmux-appimage" "tmux.appimage$" ""
-    local appimg="/tmp/gh_install_$$/tmux.appimage"
-    # Fallback: download static binary
+    info "Installing tmux AppImage..."
     local url="https://github.com/nelsonenzo/tmux-appimage/releases/latest/download/tmux.appimage"
-    curl -sL -o "$LOCAL_BIN/tmux" "$url"
-    chmod +x "$LOCAL_BIN/tmux"
+    curl -sL -o "$LOCAL_BIN/tmux.appimage" "$url"
+    chmod +x "$LOCAL_BIN/tmux.appimage"
+    # Try to extract if FUSE is not available
+    if ! "$LOCAL_BIN/tmux.appimage" --version &>/dev/null 2>&1; then
+        info "FUSE not available, extracting AppImage..."
+        cd "$LOCAL_BIN"
+        ./tmux.appimage --appimage-extract &>/dev/null
+        ln -sf "$LOCAL_BIN/squashfs-root/usr/bin/tmux" "$LOCAL_BIN/tmux"
+        rm -f "$LOCAL_BIN/tmux.appimage"
+        cd - >/dev/null
+    else
+        ln -sf "$LOCAL_BIN/tmux.appimage" "$LOCAL_BIN/tmux"
+    fi
     ok "tmux installed"
 }
 
