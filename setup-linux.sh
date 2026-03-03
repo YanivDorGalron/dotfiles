@@ -100,9 +100,9 @@ install_zsh() {
     info "Building zsh from source into ~/.local ..."
     local tmp="/tmp/zsh_build_$$"
     mkdir -p "$tmp"
-    local version="5.9.1"
+    local version="5.9"
     # Use GitHub mirror (SourceForge redirects break curl)
-    curl -sL "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-${version}.tar.gz" -o "$tmp/zsh.tar.gz"
+    curl -sL -o "$tmp/zsh.tar.gz" "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-${version}.tar.gz"
     tar -xzf "$tmp/zsh.tar.gz" -C "$tmp"
     cd "$tmp/zsh-zsh-${version}"
     # autoconf is needed for GitHub source (no pre-generated configure)
