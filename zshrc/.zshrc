@@ -3,9 +3,15 @@
 # ──────────────────────────────────────────────
 
 # ── PATH ──
-export PATH="$HOME/.local/bin:$HOME/.local/opt/go/bin:$HOME/go/bin:$HOME/.cargo/bin:$HOME/.fzf/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.local/opt/go/bin:$HOME/go/bin:$HOME/.cargo/bin:$HOME/.fzf/bin:$HOME/.atuin/bin:$PATH"
 # macOS homebrew (only exists on mac)
 [ -d /opt/homebrew/bin ] && export PATH="/opt/homebrew/bin:$PATH"
+
+# ── Terminal fixes ──
+# Ensure backspace works correctly
+stty erase '^?' 2>/dev/null
+bindkey '^?' backward-delete-char
+bindkey '^H' backward-delete-char
 
 setopt prompt_subst
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
