@@ -98,29 +98,18 @@ install_zsh() {
         ok "zsh already available at $(which zsh)"
         return
     fi
-    info "Installing prebuilt static zsh (romkatv/zsh-bin)..."
-    local tmp="/tmp/zsh_install_$$"
-    mkdir -p "$tmp"
-    local zsh_arch="x86_64"
-    [ "$ARCH" = "aarch64" ] && zsh_arch="aarch64"
-    local url="https://github.com/romkatv/zsh-bin/releases/latest/download/zsh-5.8-linux-${zsh_arch}.tar.gz"
-    curl -sL -o "$tmp/zsh.tar.gz" "$url"
-    tar -xzf "$tmp/zsh.tar.gz" -C "$tmp"
-    # zsh-bin extracts to a directory with bin/, share/, etc.
-    local zsh_dir
-    zsh_dir=$(find "$tmp" -maxdepth 1 -type d -name 'zsh*' | head -1)
-    if [ -z "$zsh_dir" ]; then
-        zsh_dir="$tmp"
+    info "Installing zsh via micromamba (conda-forge)..."
+    # Install micromamba if needed
+    if ! command -v micromamba &>/dev/null; then
+        local mm_arch="64"
+        [ "$ARCH" = "aarch64" ] && mm_arch="aarch64"
+        curl -Ls "https://micro.mamba.pm/api/micromamba/linux-${mm_arch}/latest" \
+            | tar -xj -C "$LOCAL_BIN" --strip-components=1 bin/micromamba
     fi
-    # Copy bin and share into ~/.local
-    cp -f "$zsh_dir/bin/zsh" "$LOCAL_BIN/zsh"
-    chmod +x "$LOCAL_BIN/zsh"
-    # Copy zsh functions/completions (but NOT the bundled terminfo — it conflicts with system terminfo)
-    if [ -d "$zsh_dir/share/zsh" ]; then
-        cp -rf "$zsh_dir/share/zsh" "$LOCAL_SHARE/" 2>/dev/null || true
-    fi
-    rm -rf "$tmp"
-    ok "zsh installed at $LOCAL_BIN/zsh"
+    # Install zsh from conda-forge (properly linked with ncurses)
+    MAMBA_ROOT_PREFIX="$HOME/.local/micromamba" micromamba create -n zsh -c conda-forge zsh -y 2>/dev/null
+    ln -sf "$HOME/.local/micromamba/envs/zsh/bin/zsh" "$LOCAL_BIN/zsh"
+    ok "zsh installed at $LOCAL_BIN/zsh ($(zsh --version))"
 }
 
 # ──────────────────────────────────────────────
