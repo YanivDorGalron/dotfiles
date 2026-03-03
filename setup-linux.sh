@@ -6,7 +6,8 @@
 #
 # Usage: chmod +x linux-setup.sh && ./linux-setup.sh
 #
-set -euo pipefail
+set -uo pipefail
+# Note: NOT using -e so that individual install failures don't abort everything
 
 # ──────────────────────────────────────────────
 # Paths — everything under $HOME
@@ -442,7 +443,9 @@ install_ranger() {
         return
     fi
     info "Installing ranger via pip..."
-    pip3 install --user ranger-fm
+    pip3 install --user --break-system-packages ranger-fm 2>/dev/null \
+        || pip3 install --user ranger-fm 2>/dev/null \
+        || { warn "ranger pip install failed — skipping (non-critical)"; return 0; }
     ok "ranger installed"
 }
 
