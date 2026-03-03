@@ -655,6 +655,8 @@ setup_shell_login() {
             cat >> "$HOME/.bash_profile" << EOF
 
 $marker
+export TERMINFO_DIRS="\$HOME/.terminfo:/usr/share/terminfo:/usr/lib/terminfo:/etc/terminfo"
+[ "\$TERM" = "xterm-ghostty" ] && export TERM=xterm-256color
 if command -v zsh &>/dev/null && [ -z "\$ZSH_VERSION" ]; then
     export SHELL=\$(command -v zsh)
     exec zsh -l
@@ -669,6 +671,8 @@ EOF
             cat >> "$HOME/.profile" << EOF
 
 $marker
+export TERMINFO_DIRS="\$HOME/.terminfo:/usr/share/terminfo:/usr/lib/terminfo:/etc/terminfo"
+[ "\$TERM" = "xterm-ghostty" ] && export TERM=xterm-256color
 if command -v zsh &>/dev/null && [ -z "\$ZSH_VERSION" ]; then
     export SHELL=\$(command -v zsh)
     exec zsh -l

@@ -15,8 +15,9 @@ done
 unset _zfunc
 
 # ── Terminal fixes ──
+# Static zsh can't find system terminfo — tell it where to look
+export TERMINFO_DIRS="$HOME/.terminfo:/usr/share/terminfo:/usr/lib/terminfo:/etc/terminfo"
 # xterm-ghostty causes display glitches with static zsh; fall back to xterm-256color
-# on remote Linux servers (Ghostty colors still work fine with xterm-256color)
 if [[ "$TERM" == "xterm-ghostty" ]] && [[ "$(uname)" == "Linux" ]]; then
     export TERM=xterm-256color
 fi
